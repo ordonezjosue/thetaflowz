@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { Graph, Crown, Gift, AlertTriangle, TrendingUp, Target, Shield } from 'lucide-react';
+import { BarChart3, Crown, Gift, AlertTriangle, TrendingUp, Target, Shield } from 'lucide-react';
 
 const StockScreener = () => {
   const { currentUser, hasAccess } = useAuth();
@@ -65,7 +65,7 @@ const StockScreener = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <Graph className="w-4 h-4" />
+            <BarChart3 className="w-4 h-4" />
             <span>Advanced Stock Screening</span>
           </div>
           
@@ -82,7 +82,7 @@ const StockScreener = () => {
         {/* Coming Soon Banner */}
         <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 p-8 rounded-lg text-center mb-12">
           <div className="w-20 h-20 bg-blue-600/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Graph className="w-10 h-10 text-blue-400" />
+            <BarChart3 className="w-10 h-10 text-blue-400" />
           </div>
           <h2 className="text-3xl font-bold text-white mb-4">
             Coming Soon!
@@ -132,7 +132,7 @@ const StockScreener = () => {
         {/* Current Access Status */}
         <div className="bg-dark-800 p-6 rounded-lg border border-dark-600">
           <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-            <Graph className="w-5 h-5 text-blue-400" />
+            <BarChart3 className="w-5 h-5 text-blue-400" />
             Your Access Status
           </h3>
           

@@ -15,7 +15,6 @@ import {
   Crown,
   Gift,
   Calculator,
-  Graph,
   Lightbulb,
   Rocket,
   CheckCircle,
@@ -92,7 +91,7 @@ const Learn = () => {
               onClick={handleStockScreenerAccess}
               className="btn-primary text-lg px-8 py-4 flex items-center gap-2 group"
             >
-              <Graph className="w-5 h-5" />
+              <BarChart3 className="w-5 h-5" />
               Access Stock Screener
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -143,7 +142,7 @@ const Learn = () => {
                   onClick={handleStockScreenerAccess}
                   className="btn-primary inline-flex items-center gap-2"
                 >
-                  <Graph className="w-4 h-4" />
+                  <BarChart3 className="w-4 h-4" />
                   Use Stock Screener
                 </button>
               </div>
@@ -399,7 +398,7 @@ const Learn = () => {
                     onClick={handleStockScreenerAccess}
                     className="btn-primary text-lg px-8 py-4 flex items-center gap-2 justify-center"
                   >
-                    <Graph className="w-5 h-5" />
+                    <BarChart3 className="w-5 h-5" />
                     Try Stock Screener
                   </button>
                   {!currentUser && (
@@ -442,7 +441,7 @@ const Learn = () => {
                     title: 'Explore the Stock Screener',
                     description: 'Use our advanced screening tools to find high-probability trading opportunities.',
                     action: 'Available during free trial',
-                    icon: Graph
+                    icon: BarChart3
                   },
                   {
                     step: '03',
@@ -500,7 +499,7 @@ const Learn = () => {
                     onClick={handleStockScreenerAccess}
                     className="btn-primary text-lg px-8 py-4 flex items-center gap-2 justify-center"
                   >
-                    <Graph className="w-5 h-5" />
+                    <BarChart3 className="w-5 h-5" />
                     Access Stock Screener
                   </button>
                   {!currentUser && (
