@@ -210,11 +210,11 @@ const Learn = () => {
                     title: 'P&L Tracking',
                     description: 'Monitor your performance with detailed trade logs and performance analytics.'
                   },
-                  {
-                    icon: Graph,
-                    title: 'Stock Screener',
-                    description: 'Find the perfect opportunities with our advanced screening algorithms.'
-                  },
+                                     {
+                     icon: BarChart3,
+                     title: 'Stock Screener',
+                     description: 'Find the perfect opportunities with our advanced screening algorithms.'
+                   },
                   {
                     icon: Users,
                     title: 'Community',
