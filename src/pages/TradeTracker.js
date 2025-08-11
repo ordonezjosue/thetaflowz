@@ -7,6 +7,75 @@ import AccessRestricted from '../components/AccessRestricted';
 const TradeTracker = () => {
   const { currentUser, hasAccess } = useAuth();
   
+  // All hooks must be called before any conditional returns
+  const [trades, setTrades] = useState([
+    {
+      id: 1,
+      symbol: 'AAPL',
+      strategy: 'Call Credit Spread',
+      strike: 150,
+      expiration: '2024-01-19',
+      entryPrice: 2.50,
+      exitPrice: 3.20,
+      quantity: 10,
+      entryDate: '2024-01-15',
+      exitDate: '2024-01-17',
+      pnl: 700,
+      status: 'closed',
+      notes: 'Strong earnings call, held through expiration'
+    },
+    {
+      id: 2,
+      symbol: 'TSLA',
+      strategy: 'Put Credit Spread',
+      strike: 200,
+      expiration: '2024-02-16',
+      entryPrice: 1.80,
+      exitPrice: 0.50,
+      quantity: 5,
+      entryDate: '2024-01-20',
+      exitDate: '2024-01-25',
+      pnl: -650,
+      status: 'closed',
+      notes: 'Stop loss hit, market volatility'
+    },
+    {
+      id: 3,
+      symbol: 'NVDA',
+      strategy: 'Covered Call',
+      strike: 500,
+      expiration: '2024-03-15',
+      entryPrice: 15.00,
+      exitPrice: null,
+      quantity: 2,
+      entryDate: '2024-01-30',
+      exitDate: null,
+      pnl: null,
+      status: 'open',
+      notes: 'AI momentum play, holding for earnings'
+    }
+  ]);
+  const [showAddTrade, setShowAddTrade] = useState(false);
+  const [newTrade, setNewTrade] = useState({
+    symbol: '',
+    strategy: '',
+    strike: '',
+    expiration: '',
+    entryPrice: '',
+    quantity: '',
+    notes: ''
+  });
+  const [editingTrade, setEditingTrade] = useState(null);
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('entryDate');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [selectedTimeframe, setSelectedTimeframe] = useState('1M');
+  const [showStats, setShowStats] = useState(true);
+  const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
+  const [showAdjustTrade, setShowAdjustTrade] = useState(false);
+  const [adjustingTrade, setAdjustingTrade] = useState(null);
+  
   // Check if user has access to trade tracking features
   if (!hasAccess('trades')) {
     return (
@@ -17,127 +86,6 @@ const TradeTracker = () => {
       />
     );
   }
-
-  const [trades, setTrades] = useState([
-    {
-      id: 1,
-      symbol: 'AAPL',
-      strategy: 'Put Credit Spread',
-      entryDate: '2024-01-15',
-      exitDate: '2024-01-22',
-      entryPrice: 150,
-      exitPrice: 148,
-      strikePrice: 150,
-      shortStrike: 150,
-      longStrike: 145,
-      premium: 2.50,
-      quantity: 1,
-      pnl: 250,
-      status: 'closed',
-      notes: 'Successful trade, stock stayed above strike',
-      // Advanced fields
-      capitalRequired: 500,
-      maxRisk: 250,
-      delta: -0.30,
-      theta: 0.15,
-      gamma: 0.02,
-      vega: 12.5,
-      impliedVolatility: 0.25,
-      daysToExpiration: 30,
-      dcaEntries: [
-        { date: '2024-01-15', price: 150, quantity: 1, premium: 2.50 }
-      ]
-    },
-    {
-      id: 2,
-      symbol: 'TSLA',
-      strategy: 'Call Credit Spread',
-      entryDate: '2024-01-20',
-      exitDate: null,
-      entryPrice: 200,
-      exitPrice: null,
-      strikePrice: 200,
-      shortStrike: 200,
-      longStrike: 205,
-      premium: 3.00,
-      quantity: 1,
-      pnl: 0,
-      status: 'open',
-      notes: 'Waiting for expiration or early exit',
-      // Advanced fields
-      capitalRequired: 500,
-      maxRisk: 200,
-      delta: 0.25,
-      theta: -0.20,
-      gamma: 0.03,
-      vega: 15.2,
-      impliedVolatility: 0.35,
-      daysToExpiration: 45,
-      dcaEntries: [
-        { date: '2024-01-20', price: 200, quantity: 1, premium: 3.00 },
-        { date: '2024-01-25', price: 195, quantity: 1, premium: 2.80 }
-      ]
-    },
-    {
-      id: 3,
-      symbol: 'SPY',
-      strategy: 'Wheel Strategy',
-      entryDate: '2024-01-10',
-      exitDate: '2024-01-25',
-      entryPrice: 400,
-      exitPrice: 405,
-      strikePrice: 400,
-      shortStrike: 400,
-      longStrike: null,
-      premium: 1.50,
-      quantity: 2,
-      pnl: 300,
-      status: 'closed',
-      notes: 'Wheel completed, stock assigned and sold',
-      // Advanced fields
-      capitalRequired: 80000,
-      maxRisk: 80000,
-      delta: -0.50,
-      theta: 0.25,
-      gamma: 0.01,
-      vega: 8.5,
-      impliedVolatility: 0.18,
-      daysToExpiration: 60,
-      dcaEntries: [
-        { date: '2024-01-10', price: 400, quantity: 2, premium: 1.50 }
-      ]
-    }
-  ]);
-
-  const [showAddTrade, setShowAddTrade] = useState(false);
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTrade, setSelectedTrade] = useState(null);
-  const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
-  const [showAdjustTrade, setShowAdjustTrade] = useState(false);
-  const [adjustingTrade, setAdjustingTrade] = useState(null);
-
-  const [newTrade, setNewTrade] = useState({
-    symbol: '',
-    strategy: '',
-    entryDate: '',
-    entryPrice: '',
-    strikePrice: '',
-    shortStrike: '',
-    longStrike: '',
-    premium: '',
-    quantity: '',
-    notes: '',
-    // Advanced fields
-    capitalRequired: '',
-    maxRisk: '',
-    delta: '',
-    theta: '',
-    gamma: '',
-    vega: '',
-    impliedVolatility: '',
-    daysToExpiration: ''
-  });
 
   const strategies = [
     'Put Credit Spread',
@@ -298,9 +246,9 @@ const TradeTracker = () => {
   };
 
   const filteredTrades = trades.filter(trade => {
-    const matchesFilter = filter === 'all' || trade.status === filter;
-    const matchesSearch = trade.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         trade.strategy.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === 'all' || trade.status === filterStatus;
+    const matchesSearch = trade.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         trade.strategy.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -458,14 +406,14 @@ const TradeTracker = () => {
             <input
               type="text"
               placeholder="Search trades..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="input-field pl-10 w-full"
             />
           </div>
           <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
             className="input-field"
           >
             <option value="all">All Trades</option>
@@ -552,7 +500,7 @@ const TradeTracker = () => {
                            </>
                          )}
                          <button
-                           onClick={() => setSelectedTrade(trade)}
+                           onClick={() => setEditingTrade(trade)}
                            className="text-gray-400 hover:text-white text-sm"
                          >
                            Details
@@ -567,13 +515,13 @@ const TradeTracker = () => {
         </div>
 
         {/* Trade Details Modal */}
-        {selectedTrade && (
+        {editingTrade && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-dark-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Trade Details: {selectedTrade.symbol}</h2>
+                <h2 className="text-2xl font-bold text-white">Trade Details: {editingTrade.symbol}</h2>
                 <button
-                  onClick={() => setSelectedTrade(null)}
+                  onClick={() => setEditingTrade(null)}
                   className="text-gray-400 hover:text-white"
                 >
                   ✕
@@ -586,23 +534,23 @@ const TradeTracker = () => {
                   <div className="bg-dark-700 p-4 rounded-lg space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Strategy:</span>
-                      <span className="text-white">{selectedTrade.strategy}</span>
+                      <span className="text-white">{editingTrade.strategy}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Entry Date:</span>
-                      <span className="text-white">{selectedTrade.entryDate}</span>
+                      <span className="text-white">{editingTrade.entryDate}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Entry Price:</span>
-                      <span className="text-white">${selectedTrade.entryPrice}</span>
+                      <span className="text-white">${editingTrade.entryPrice}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Quantity:</span>
-                      <span className="text-white">{selectedTrade.quantity}</span>
+                      <span className="text-white">{editingTrade.quantity}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Premium:</span>
-                      <span className="text-white">${selectedTrade.premium}</span>
+                      <span className="text-white">${editingTrade.premium}</span>
                     </div>
                   </div>
                 </div>
@@ -612,23 +560,23 @@ const TradeTracker = () => {
                   <div className="bg-dark-700 p-4 rounded-lg space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Delta:</span>
-                      <span className="text-white">{selectedTrade.delta?.toFixed(3)}</span>
+                      <span className="text-white">{editingTrade.delta?.toFixed(3)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Theta:</span>
-                      <span className="text-white">{selectedTrade.theta?.toFixed(3)}</span>
+                      <span className="text-white">{editingTrade.theta?.toFixed(3)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Gamma:</span>
-                      <span className="text-white">{selectedTrade.gamma?.toFixed(3)}</span>
+                      <span className="text-white">{editingTrade.gamma?.toFixed(3)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Vega:</span>
-                      <span className="text-white">{selectedTrade.vega?.toFixed(1)}</span>
+                      <span className="text-white">{editingTrade.vega?.toFixed(1)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">IV:</span>
-                      <span className="text-white">{(selectedTrade.impliedVolatility * 100).toFixed(1)}%</span>
+                      <span className="text-white">{(editingTrade.impliedVolatility * 100).toFixed(1)}%</span>
                     </div>
                   </div>
                 </div>
@@ -638,20 +586,20 @@ const TradeTracker = () => {
                   <div className="bg-dark-700 p-4 rounded-lg space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Capital Required:</span>
-                      <span className="text-white">${selectedTrade.capitalRequired?.toLocaleString()}</span>
+                      <span className="text-white">${editingTrade.capitalRequired?.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Max Risk:</span>
-                      <span className="text-white">${selectedTrade.maxRisk?.toLocaleString()}</span>
+                      <span className="text-white">${editingTrade.maxRisk?.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Days to Exp:</span>
-                      <span className="text-white">{selectedTrade.daysToExpiration}</span>
+                      <span className="text-white">{editingTrade.daysToExpiration}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">P&L:</span>
-                      <span className={`font-medium ${selectedTrade.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        ${selectedTrade.pnl}
+                      <span className={`font-medium ${editingTrade.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        ${editingTrade.pnl}
                       </span>
                     </div>
                   </div>
@@ -660,7 +608,7 @@ const TradeTracker = () => {
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-white">DCA Entries</h3>
                   <div className="bg-dark-700 p-4 rounded-lg space-y-2">
-                    {selectedTrade.dcaEntries?.map((entry, index) => (
+                    {editingTrade.dcaEntries?.map((entry, index) => (
                       <div key={index} className="border-b border-dark-600 pb-2 last:border-b-0">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-400">Entry {index + 1}:</span>
@@ -683,7 +631,7 @@ const TradeTracker = () => {
               <div className="mt-6">
                 <h3 className="text-lg font-semibold text-white mb-3">Notes</h3>
                 <p className="text-gray-300 bg-dark-700 p-4 rounded-lg">
-                  {selectedTrade.notes || 'No notes available'}
+                  {editingTrade.notes || 'No notes available'}
                 </p>
               </div>
             </div>
