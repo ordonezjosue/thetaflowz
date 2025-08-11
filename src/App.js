@@ -59,11 +59,7 @@ function App() {
             />
             <Route 
               path="/pricing" 
-              element={
-                <ProtectedRoute>
-                  <Pricing />
-                </ProtectedRoute>
-              } 
+              element={<Pricing />}
             />
             <Route 
               path="/admin" 

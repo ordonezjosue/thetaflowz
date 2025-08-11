@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Star, Zap, Crown } from 'lucide-react';
+import { Check, Star, Zap, Crown, Gift } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const PricingPlans = () => {
@@ -9,12 +9,30 @@ const PricingPlans = () => {
 
   const plans = [
     {
+      id: 'free',
+      name: 'Free Plan',
+      price: 0,
+      period: '7 days',
+      icon: Gift,
+      features: [
+        'Access to Learn section only',
+        'Basic trading education',
+        'Community forum access',
+        '7-day trial period',
+        'No credit card required'
+      ],
+      popular: false,
+      isFree: true,
+      stripePriceId: null
+    },
+    {
       id: 'basic',
       name: 'Basic Plan',
       price: 9.99,
       period: 'month',
       icon: Zap,
       features: [
+        'Everything in Free',
         'Access to basic trading strategies',
         'Market data (delayed)',
         'Basic trade tracking',
@@ -22,7 +40,8 @@ const PricingPlans = () => {
         'Community forum access'
       ],
       popular: false,
-      stripePriceId: 'price_basic_monthly' // You'll get this from Stripe
+      isFree: false,
+      stripePriceId: 'price_basic_monthly'
     },
     {
       id: 'premium',
@@ -41,11 +60,18 @@ const PricingPlans = () => {
         'Mobile app access'
       ],
       popular: true,
-      stripePriceId: 'price_premium_monthly' // You'll get this from Stripe
+      isFree: false,
+      stripePriceId: 'price_premium_monthly'
     }
   ];
 
   const handleSubscribe = async (plan) => {
+    if (plan.isFree) {
+      // For free plan, just redirect to registration
+      window.location.href = '/register?plan=free';
+      return;
+    }
+
     if (!currentUser) {
       // Redirect to login if not authenticated
       window.location.href = '/login';
@@ -106,12 +132,12 @@ const PricingPlans = () => {
             Choose Your Trading Plan
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Start with our basic plan and upgrade as you grow. All plans include our core trading tools and community access.
+            Start with our free plan and upgrade as you grow. All plans include our core trading tools and community access.
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan) => {
             const IconComponent = plan.icon;
             return (
@@ -120,6 +146,8 @@ const PricingPlans = () => {
                 className={`relative bg-dark-800 rounded-2xl p-8 border-2 transition-all duration-300 hover:scale-105 ${
                   plan.popular
                     ? 'border-primary-500 shadow-2xl shadow-primary-500/20'
+                    : plan.isFree
+                    ? 'border-green-500 shadow-2xl shadow-green-500/20'
                     : 'border-dark-600 hover:border-gray-500'
                 }`}
               >
@@ -132,19 +160,38 @@ const PricingPlans = () => {
                   </div>
                 )}
 
+                {/* Free Plan Badge */}
+                {plan.isFree && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-green-500 text-white px-4 py-2 rounded-full text-sm font-medium">
+                      Free Trial
+                    </span>
+                  </div>
+                )}
+
                 {/* Plan Header */}
                 <div className="text-center mb-8">
                   <div className="flex justify-center mb-4">
                     <div className={`p-3 rounded-full ${
-                      plan.popular ? 'bg-primary-500/20 text-primary-400' : 'bg-gray-500/20 text-gray-400'
+                      plan.popular 
+                        ? 'bg-primary-500/20 text-primary-400' 
+                        : plan.isFree
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-gray-500/20 text-gray-400'
                     }`}>
                       <IconComponent className="h-8 w-8" />
                     </div>
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                   <div className="mb-6">
-                    <span className="text-4xl font-bold text-white">${plan.price}</span>
-                    <span className="text-gray-400">/{plan.period}</span>
+                    {plan.isFree ? (
+                      <span className="text-4xl font-bold text-green-500">Free</span>
+                    ) : (
+                      <>
+                        <span className="text-4xl font-bold text-white">${plan.price}</span>
+                        <span className="text-gray-400">/{plan.period}</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -165,6 +212,8 @@ const PricingPlans = () => {
                   className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 ${
                     plan.popular
                       ? 'bg-primary-500 hover:bg-primary-600 text-white shadow-lg hover:shadow-xl'
+                      : plan.isFree
+                      ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl'
                       : 'bg-dark-700 hover:bg-dark-600 text-white border border-gray-600 hover:border-gray-500'
                   } ${loading && selectedPlan === plan.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
@@ -173,6 +222,8 @@ const PricingPlans = () => {
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Processing...
                     </div>
+                  ) : plan.isFree ? (
+                    'Start Free Trial'
                   ) : (
                     plan.popular ? 'Start Premium Plan' : 'Start Basic Plan'
                   )}
@@ -180,7 +231,10 @@ const PricingPlans = () => {
 
                 {/* Additional Info */}
                 <p className="text-center text-sm text-gray-400 mt-4">
-                  Cancel anytime • No setup fees
+                  {plan.isFree 
+                    ? 'No credit card required • 7-day access' 
+                    : 'Cancel anytime • No setup fees'
+                  }
                 </p>
               </div>
             );
@@ -192,16 +246,16 @@ const PricingPlans = () => {
           <h3 className="text-2xl font-bold text-white mb-8">Frequently Asked Questions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto text-left">
             <div>
+              <h4 className="text-lg font-semibold text-white mb-2">What's included in the free plan?</h4>
+              <p className="text-gray-300">The free plan gives you 7 days of access to our Learn section, basic trading education, and community forum access.</p>
+            </div>
+            <div>
               <h4 className="text-lg font-semibold text-white mb-2">Can I change plans?</h4>
               <p className="text-gray-300">Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
             </div>
             <div>
               <h4 className="text-lg font-semibold text-white mb-2">What payment methods do you accept?</h4>
               <p className="text-gray-300">We accept all major credit cards, debit cards, and digital wallets through our secure Stripe integration.</p>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-2">Is there a free trial?</h4>
-              <p className="text-gray-300">Yes! New users get a 7-day free trial of our Premium plan to experience all features.</p>
             </div>
             <div>
               <h4 className="text-lg font-semibold text-white mb-2">How do I cancel my subscription?</h4>

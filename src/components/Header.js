@@ -1,15 +1,71 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Flame, LogOut, User } from 'lucide-react';
+import { Flame, LogOut, User, Crown, Zap, Gift, AlertTriangle } from 'lucide-react';
 
 const Header = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, hasAccess, isPlanExpired, getRemainingDays } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleNavigation = (route) => {
+    if (!currentUser) {
+      // Not logged in, redirect to login
+      navigate('/login');
+      return;
+    }
+
+    if (!hasAccess(route)) {
+      // No access, redirect to pricing
+      navigate('/pricing');
+      return;
+    }
+
+    // Has access, navigate normally
+    navigate(`/${route}`);
+  };
+
+  const getPlanIcon = (plan) => {
+    switch (plan) {
+      case 'premium':
+        return <Crown className="h-4 w-4 text-purple-500" />;
+      case 'basic':
+        return <Zap className="h-4 w-4 text-blue-500" />;
+      case 'free':
+        return <Gift className="h-4 w-4 text-green-500" />;
+      default:
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    }
+  };
+
+  const getPlanColor = (plan) => {
+    switch (plan) {
+      case 'premium':
+        return 'text-purple-400';
+      case 'basic':
+        return 'text-blue-400';
+      case 'free':
+        return 'text-green-400';
+      default:
+        return 'text-yellow-400';
+    }
+  };
+
+  const getPlanName = (plan) => {
+    switch (plan) {
+      case 'premium':
+        return 'Premium';
+      case 'basic':
+        return 'Basic';
+      case 'free':
+        return 'Free';
+      default:
+        return 'Expired';
+    }
   };
 
   return (
@@ -24,15 +80,24 @@ const Header = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link to="/learn" className="text-gray-300 hover:text-white transition-colors">
+            <button
+              onClick={() => handleNavigation('learn')}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
               Learn
-            </Link>
-            <Link to="/market" className="text-gray-300 hover:text-white transition-colors">
+            </button>
+            <button
+              onClick={() => handleNavigation('market')}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
               Market
-            </Link>
-            <Link to="/trades" className="text-gray-300 hover:text-white transition-colors">
+            </button>
+            <button
+              onClick={() => handleNavigation('trades')}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
               Trades
-            </Link>
+            </button>
             <Link to="/pricing" className="text-gray-300 hover:text-white transition-colors">
               Pricing
             </Link>
@@ -47,10 +112,26 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {currentUser ? (
               <div className="flex items-center space-x-4">
+                {/* Plan Status */}
+                <div className="flex items-center space-x-2">
+                  {getPlanIcon(currentUser.plan)}
+                  <span className={`text-sm font-medium ${getPlanColor(currentUser.plan)}`}>
+                    {getPlanName(currentUser.plan)}
+                  </span>
+                  {currentUser.plan === 'free' && getRemainingDays() !== null && (
+                    <span className="text-xs text-gray-400">
+                      ({getRemainingDays()} days left)
+                    </span>
+                  )}
+                </div>
+
+                {/* User Info */}
                 <div className="flex items-center space-x-2">
                   <User className="h-4 w-4 text-gray-400" />
                   <span className="text-sm text-gray-300">{currentUser.name}</span>
                 </div>
+
+                {/* Logout */}
                 <button
                   onClick={handleLogout}
                   className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"

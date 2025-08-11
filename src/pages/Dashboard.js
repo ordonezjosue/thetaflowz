@@ -75,6 +75,61 @@ const Dashboard = () => {
           </p>
         </div>
 
+        {/* Plan Status */}
+        {currentUser && (
+          <div className="mb-6">
+            <div className="bg-dark-800 rounded-lg p-4 border border-dark-600">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-full ${
+                    currentUser.plan === 'premium' ? 'bg-purple-500/20' :
+                    currentUser.plan === 'basic' ? 'bg-blue-500/20' :
+                    currentUser.plan === 'free' ? 'bg-green-500/20' : 'bg-yellow-500/20'
+                  }`}>
+                    {currentUser.plan === 'premium' ? <TrendingUp className="h-5 w-5 text-purple-500" /> :
+                     currentUser.plan === 'basic' ? <BarChart3 className="h-5 w-5 text-blue-500" /> :
+                     currentUser.plan === 'free' ? <BookOpen className="h-5 w-5 text-green-500" /> :
+                     <AlertCircle className="h-5 w-5 text-yellow-500" />}
+                  </div>
+                  <div>
+                    <h3 className="text-white font-medium">
+                      {currentUser.plan === 'premium' ? 'Premium Plan' :
+                       currentUser.plan === 'basic' ? 'Basic Plan' :
+                       currentUser.plan === 'free' ? 'Free Plan' : 'Plan Expired'}
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      {currentUser.plan === 'premium' ? 'Full access to all features' :
+                       currentUser.plan === 'basic' ? 'Access to basic features and market data' :
+                       currentUser.plan === 'free' ? 'Limited access - Learn section only' : 'No active plan'}
+                    </p>
+                  </div>
+                </div>
+                
+                {currentUser.plan === 'free' && (
+                  <div className="text-right">
+                    <p className="text-green-400 text-sm font-medium">Free Trial</p>
+                    <p className="text-gray-400 text-xs">
+                      {currentUser.planExpiry ? 
+                        `${Math.ceil((new Date(currentUser.planExpiry) - new Date()) / (1000 * 60 * 60 * 24))} days remaining` :
+                        '7 days remaining'
+                      }
+                    </p>
+                  </div>
+                )}
+                
+                {currentUser.plan !== 'premium' && !currentUser.isAdmin && (
+                  <Link
+                    to="/pricing"
+                    className="btn-primary text-sm px-4 py-2"
+                  >
+                    Upgrade Plan
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Market Data Status Notification */}
         {marketDataStatus === 'mock' && (
           <div className="bg-yellow-900/20 border border-yellow-500/50 text-yellow-400 p-4 rounded-lg mb-6">

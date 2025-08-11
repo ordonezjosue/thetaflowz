@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { Plus, TrendingUp, TrendingDown, DollarSign, Calendar, BarChart3, Filter, Search, Target, Zap, Shield, Calculator, PieChart, Activity } from 'lucide-react';
 import StockQuote from '../components/StockQuote';
+import AccessRestricted from '../components/AccessRestricted';
 
 const TradeTracker = () => {
+  const { currentUser, hasAccess } = useAuth();
+  
+  // Check if user has access to trade tracking features
+  if (!hasAccess('trades')) {
+    return (
+      <AccessRestricted 
+        feature="trades" 
+        currentPlan={currentUser?.plan} 
+        requiredPlan="basic" 
+      />
+    );
+  }
+
   const [trades, setTrades] = useState([
     {
       id: 1,
