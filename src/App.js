@@ -11,6 +11,7 @@ import Learn from './pages/Learn';
 import TradeTracker from './pages/TradeTracker';
 import Market from './pages/Market';
 import AdminDashboard from './pages/AdminDashboard';
+import Pricing from './pages/Pricing';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -53,6 +54,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Market />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/pricing" 
+              element={
+                <ProtectedRoute>
+                  <Pricing />
                 </ProtectedRoute>
               } 
             />

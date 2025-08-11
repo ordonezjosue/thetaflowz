@@ -33,6 +33,9 @@ const Header = () => {
             <Link to="/trades" className="text-gray-300 hover:text-white transition-colors">
               Trades
             </Link>
+            <Link to="/pricing" className="text-gray-300 hover:text-white transition-colors">
+              Pricing
+            </Link>
             {currentUser?.isAdmin && (
               <Link to="/admin" className="text-gray-300 hover:text-white transition-colors">
                 Admin
