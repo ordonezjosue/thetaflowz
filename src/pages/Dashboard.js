@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useMarketData } from '../contexts/MarketDataContext';
-import { BookOpen, TrendingUp, BarChart3, Target, ArrowRight, Calendar, DollarSign, TrendingDown } from 'lucide-react';
+import twelveDataService from '../services/twelveDataService';
+import { BookOpen, TrendingUp, BarChart3, Target, ArrowRight, Calendar, DollarSign, TrendingDown, AlertCircle } from 'lucide-react';
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
   const { marketSummary } = useMarketData();
+  const [marketDataStatus, setMarketDataStatus] = useState('checking'); // 'checking', 'live', 'mock'
+
+  // Check market data status on component mount
+  useEffect(() => {
+    checkMarketDataStatus();
+  }, []);
+
+  const checkMarketDataStatus = async () => {
+    try {
+      await twelveDataService.getMarketOverview();
+      setMarketDataStatus('live');
+    } catch (error) {
+      console.log('Market data API unavailable, using mock data');
+      setMarketDataStatus('mock');
+    }
+  };
 
   const recentTrades = [
     { id: 1, symbol: 'AAPL', strategy: 'Put Credit Spread', pnl: 250, status: 'closed' },
@@ -57,6 +74,36 @@ const Dashboard = () => {
             Here's your options trading overview and next steps
           </p>
         </div>
+
+        {/* Market Data Status Notification */}
+        {marketDataStatus === 'mock' && (
+          <div className="bg-yellow-900/20 border border-yellow-500/50 text-yellow-400 p-4 rounded-lg mb-6">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              <div>
+                <p className="font-medium">📊 Market Data Status</p>
+                <p className="text-sm text-yellow-300">
+                  Currently showing mock/demo data. Real-time market information is temporarily unavailable. 
+                  Your dashboard data is for demonstration purposes only.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {marketDataStatus === 'live' && (
+          <div className="bg-green-900/20 border border-green-500/50 text-green-400 p-4 rounded-lg mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <div>
+                <p className="font-medium">📊 Live Market Data</p>
+                <p className="text-sm text-green-300">
+                  Connected to real-time market data. All information is current and accurate.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

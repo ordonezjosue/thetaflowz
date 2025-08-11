@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useMarketData } from '../contexts/MarketDataContext';
 import twelveDataService from '../services/twelveDataService';
-import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw, AlertCircle } from 'lucide-react';
 
 const StockQuote = ({ symbol, showDetails = false, className = '' }) => {
   const { getQuote } = useMarketData();
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [usingMockData, setUsingMockData] = useState(false);
 
   const fetchQuote = useCallback(async () => {
     if (!symbol) return;
@@ -15,6 +16,7 @@ const StockQuote = ({ symbol, showDetails = false, className = '' }) => {
     try {
       setLoading(true);
       setError(null);
+      setUsingMockData(false);
       
       // Try TwelveData API first
       try {
@@ -28,6 +30,7 @@ const StockQuote = ({ symbol, showDetails = false, className = '' }) => {
         return;
       } catch (apiError) {
         console.log('TwelveData API failed, falling back to mock data:', apiError);
+        setUsingMockData(true);
       }
       
       // Fallback to mock data if API fails
@@ -89,6 +92,16 @@ const StockQuote = ({ symbol, showDetails = false, className = '' }) => {
 
   return (
     <div className={`${className}`}>
+      {/* Mock Data Notification */}
+      {usingMockData && (
+        <div className="bg-yellow-900/20 border border-yellow-500/50 text-yellow-400 p-2 rounded-lg mb-3 text-xs">
+          <div className="flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />
+            <span>⚠️ Showing mock data - API unavailable</span>
+          </div>
+        </div>
+      )}
+      
       <div className="flex items-center justify-between">
         <div>
           <h4 className="font-semibold text-white">{quote.shortName || quote.longName || quote.symbol}</h4>

@@ -22,6 +22,7 @@ const MarketOverview = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [realTimeData, setRealTimeData] = useState(null);
   const [apiStatus, setApiStatus] = useState(null);
+  const [apiFailed, setApiFailed] = useState(false);
 
   // Fetch real-time market data on component mount
   useEffect(() => {
@@ -36,10 +37,12 @@ const MarketOverview = () => {
 
   const fetchRealTimeData = async () => {
     try {
+      setApiFailed(false);
       const data = await twelveDataService.getMarketOverview();
       setRealTimeData(data);
     } catch (error) {
       console.error('Error fetching real-time data:', error);
+      setApiFailed(true);
       // Don't show error to user, just log it
     }
   };
@@ -135,6 +138,22 @@ const MarketOverview = () => {
 
       {/* API Status */}
       {renderApiStatus()}
+
+      {/* API Failure Notification */}
+      {apiFailed && (
+        <div className="bg-yellow-900/20 border border-yellow-500/50 text-yellow-400 p-4 rounded-lg">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5" />
+            <div>
+              <p className="font-medium">⚠️ API Connection Failed</p>
+              <p className="text-sm text-yellow-300">
+                Unable to connect to real-time market data. You are now viewing mock/demo data. 
+                Please refresh or check back later for live market information.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-900/20 border border-red-500/50 text-red-400 p-4 rounded-lg">
