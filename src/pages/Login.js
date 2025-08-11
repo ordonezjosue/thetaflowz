@@ -120,11 +120,6 @@ const Login = () => {
               </Link>
             </p>
           </div>
-
-          <div className="text-center text-sm text-gray-400">
-            <p>Demo: Use any email/password to login</p>
-            <p>Admin: Use email with "admin" to access admin panel</p>
-          </div>
         </form>
       </div>
     </div>

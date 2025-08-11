@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       id: '1',
       email,
       name: email.split('@')[0],
-      isAdmin: email.includes('admin'),
+      isAdmin: email === 'ordonezjosue@gmail.com',
       createdAt: new Date().toISOString()
     };
     
