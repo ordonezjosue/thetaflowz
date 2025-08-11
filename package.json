@@ -21,8 +21,10 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
+    "build:fallback": "react-scripts build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postinstall": "npm run build:fallback || npm run build"
   },
   "eslintConfig": {
     "extends": [
