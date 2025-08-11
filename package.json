@@ -20,11 +20,10 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "react-scripts build",
     "build:fallback": "react-scripts build",
     "test": "craco test",
-    "eject": "react-scripts eject",
-    "postinstall": "npm run build:fallback || npm run build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
