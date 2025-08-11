@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMarketData } from '../contexts/MarketDataContext';
-import { TrendingUp, TrendingDown, Plus, X, Search, RefreshCw } from 'lucide-react';
+import twelveDataService from '../services/twelveDataService';
+import { TrendingUp, TrendingDown, Plus, X, Search, RefreshCw, AlertCircle } from 'lucide-react';
 
 const MarketOverview = () => {
   const {
@@ -19,6 +20,38 @@ const MarketOverview = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [realTimeData, setRealTimeData] = useState(null);
+  const [apiStatus, setApiStatus] = useState(null);
+
+  // Fetch real-time market data on component mount
+  useEffect(() => {
+    fetchRealTimeData();
+    checkApiStatus();
+    
+    // Set up interval to refresh data every 30 seconds
+    const interval = setInterval(fetchRealTimeData, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchRealTimeData = async () => {
+    try {
+      const data = await twelveDataService.getMarketOverview();
+      setRealTimeData(data);
+    } catch (error) {
+      console.error('Error fetching real-time data:', error);
+      // Don't show error to user, just log it
+    }
+  };
+
+  const checkApiStatus = async () => {
+    try {
+      const status = await twelveDataService.checkApiStatus();
+      setApiStatus(status);
+    } catch (error) {
+      console.error('Error checking API status:', error);
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -66,6 +99,20 @@ const MarketOverview = () => {
     return new Date(timestamp).toLocaleTimeString();
   };
 
+  // API Status Display
+  const renderApiStatus = () => {
+    if (!apiStatus) return null;
+    
+    return (
+      <div className="bg-blue-900/20 border border-blue-500/50 text-blue-400 p-3 rounded-lg text-sm">
+        <div className="flex items-center gap-2">
+          <AlertCircle className="w-4 h-4" />
+          <span>API Status: {apiStatus.plan || 'Free Plan'} • Requests: {apiStatus.requests_used || 0}/{apiStatus.requests_limit || 'Unlimited'}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -73,11 +120,11 @@ const MarketOverview = () => {
         <div>
           <h2 className="text-2xl font-bold text-white">Market Overview</h2>
           <p className="text-gray-400 text-sm">
-            Last updated: {lastUpdate ? formatTime(lastUpdate) : 'Never'}
+            Last updated: {realTimeData?.timestamp ? formatTime(realTimeData.timestamp) : 'Never'}
           </p>
         </div>
         <button
-          onClick={fetchMarketSummary}
+          onClick={fetchRealTimeData}
           disabled={loading}
           className="btn-secondary flex items-center gap-2"
         >
@@ -86,35 +133,106 @@ const MarketOverview = () => {
         </button>
       </div>
 
+      {/* API Status */}
+      {renderApiStatus()}
+
       {error && (
         <div className="bg-red-900/20 border border-red-500/50 text-red-400 p-4 rounded-lg">
           {error}
         </div>
       )}
 
-      {/* Major Indices */}
+      {/* Real-Time Major Indices */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-white mb-4">Major Indices</h3>
+        <h3 className="text-lg font-semibold text-white mb-4">Real-Time Market Data</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {marketSummary.map((index) => (
-            <div key={index.symbol} className="bg-dark-800 p-4 rounded-lg">
+          {realTimeData?.sp500 && (
+            <div className="bg-dark-800 p-4 rounded-lg border-l-4 border-blue-500">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <h4 className="font-semibold text-white">{index.name}</h4>
-                  <p className="text-gray-400 text-sm">{index.symbol}</p>
+                  <h4 className="font-semibold text-white">S&P 500</h4>
+                  <p className="text-gray-400 text-sm">SPY</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-white font-semibold">{formatPrice(index.price)}</p>
-                  {formatChange(index.change, index.changePercent)}
+                  <p className="text-white font-semibold">{formatPrice(realTimeData.sp500.price)}</p>
+                  {formatChange(realTimeData.sp500.change, realTimeData.sp500.changePercent)}
                 </div>
               </div>
               <div className="text-xs text-gray-500">
-                Vol: {index.volume?.toLocaleString() || 'N/A'}
+                Vol: {realTimeData.sp500.volume?.toLocaleString() || 'N/A'}
               </div>
             </div>
-          ))}
+          )}
+          
+          {realTimeData?.nasdaq && (
+            <div className="bg-dark-800 p-4 rounded-lg border-l-4 border-green-500">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h4 className="font-semibold text-white">NASDAQ</h4>
+                  <p className="text-gray-400 text-sm">QQQ</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-white font-semibold">{formatPrice(realTimeData.nasdaq.price)}</p>
+                  {formatChange(realTimeData.nasdaq.change, realTimeData.nasdaq.changePercent)}
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">
+                Vol: {realTimeData.nasdaq.volume?.toLocaleString() || 'N/A'}
+              </div>
+            </div>
+          )}
+          
+          {realTimeData?.dow && (
+            <div className="bg-dark-800 p-4 rounded-lg border-l-4 border-purple-500">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h4 className="font-semibold text-white">Dow Jones</h4>
+                  <p className="text-gray-400 text-sm">DIA</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-white font-semibold">{formatPrice(realTimeData.dow.price)}</p>
+                  {formatChange(realTimeData.dow.change, realTimeData.dow.changePercent)}
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">
+                Vol: {realTimeData.dow.volume?.toLocaleString() || 'N/A'}
+              </div>
+            </div>
+          )}
         </div>
+        
+        {!realTimeData && (
+          <div className="text-center py-8 text-gray-400">
+            <p>Loading real-time market data...</p>
+          </div>
+        )}
       </div>
+
+      {/* Legacy Market Summary (fallback) */}
+      {marketSummary.length > 0 && (
+        <div className="card">
+          <h3 className="text-lg font-semibold text-white mb-4">Additional Market Data</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {marketSummary.map((index) => (
+              <div key={index.symbol} className="bg-dark-800 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <h4 className="font-semibold text-white">{index.name}</h4>
+                    <p className="text-gray-400 text-sm">{index.symbol}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-semibold">{formatPrice(index.price)}</p>
+                    {formatChange(index.change, index.changePercent)}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500">
+                  Vol: {index.volume?.toLocaleString() || 'N/A'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Watchlist */}
       <div className="card">

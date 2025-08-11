@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useMarketData } from '../contexts/MarketDataContext';
+import twelveDataService from '../services/twelveDataService';
 import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
 const StockQuote = ({ symbol, showDetails = false, className = '' }) => {
@@ -8,12 +9,28 @@ const StockQuote = ({ symbol, showDetails = false, className = '' }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchQuote = async () => {
+  const fetchQuote = useCallback(async () => {
     if (!symbol) return;
     
     try {
       setLoading(true);
       setError(null);
+      
+      // Try TwelveData API first
+      try {
+        const realTimeData = await twelveDataService.getStockQuote(symbol);
+        setQuote({
+          ...realTimeData,
+          shortName: symbol, // Use symbol as fallback name
+          longName: symbol,
+          marketCap: null // TwelveData doesn't provide market cap in basic quote
+        });
+        return;
+      } catch (apiError) {
+        console.log('TwelveData API failed, falling back to mock data:', apiError);
+      }
+      
+      // Fallback to mock data if API fails
       const data = await getQuote(symbol);
       setQuote(data);
     } catch (err) {
@@ -22,11 +39,11 @@ const StockQuote = ({ symbol, showDetails = false, className = '' }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [symbol, getQuote]);
 
   useEffect(() => {
     fetchQuote();
-  }, [symbol]);
+  }, [fetchQuote]);
 
   const formatPrice = (price) => {
     return typeof price === 'number' ? `$${price.toFixed(2)}` : 'N/A';
@@ -74,7 +91,7 @@ const StockQuote = ({ symbol, showDetails = false, className = '' }) => {
     <div className={`${className}`}>
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="font-semibold text-white">{quote.shortName || quote.longName}</h4>
+          <h4 className="font-semibold text-white">{quote.shortName || quote.longName || quote.symbol}</h4>
           <p className="text-gray-400 text-sm">{quote.symbol}</p>
         </div>
         <div className="text-right">
@@ -102,6 +119,14 @@ const StockQuote = ({ symbol, showDetails = false, className = '' }) => {
           <div>
             <p className="text-gray-400">Day Low</p>
             <p className="text-white">{formatPrice(quote.low)}</p>
+          </div>
+          <div>
+            <p className="text-gray-400">Open</p>
+            <p className="text-white">{formatPrice(quote.open)}</p>
+          </div>
+          <div>
+            <p className="text-gray-400">Previous Close</p>
+            <p className="text-white">{formatPrice(quote.previousClose)}</p>
           </div>
         </div>
       )}

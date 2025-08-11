@@ -86,7 +86,7 @@ src/
 ├── components/          # Reusable UI components
 │   ├── Header.js       # Navigation header
 │   ├── ProtectedRoute.js # Route protection
-│   ├── MarketOverview.js # Market data display
+│   ├── Overview.js # Market data display
 │   ├── StockQuote.js   # Individual stock quotes
 │   └── OptionsChainViewer.js # Options chain display
 ├── contexts/           # React contexts
