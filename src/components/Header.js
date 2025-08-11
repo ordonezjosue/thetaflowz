@@ -13,6 +13,12 @@ const Header = () => {
   };
 
   const handleNavigation = (route) => {
+    if (route === 'learn') {
+      // Learn page is public, navigate directly
+      navigate('/learn');
+      return;
+    }
+
     if (!currentUser) {
       // Not logged in, redirect to login
       navigate('/login');

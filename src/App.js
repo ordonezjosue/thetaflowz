@@ -12,6 +12,7 @@ import TradeTracker from './pages/TradeTracker';
 import Market from './pages/Market';
 import AdminDashboard from './pages/AdminDashboard';
 import Pricing from './pages/Pricing';
+import StockScreener from './pages/StockScreener';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -35,11 +36,7 @@ function App() {
               />
               <Route 
                 path="/learn" 
-                element={
-                  <ProtectedRoute>
-                    <Learn />
-                  </ProtectedRoute>
-                } 
+                element={<Learn />}
               />
                           <Route 
               path="/trades" 
@@ -60,6 +57,10 @@ function App() {
             <Route 
               path="/pricing" 
               element={<Pricing />}
+            />
+            <Route
+              path="/screener"
+              element={<StockScreener />}
             />
             <Route 
               path="/admin" 

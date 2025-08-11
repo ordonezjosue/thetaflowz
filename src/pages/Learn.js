@@ -1,297 +1,522 @@
 import React, { useState } from 'react';
-import { BookOpen, TrendingUp, Shield, Target, ArrowRight, CheckCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { 
+  TrendingUp, 
+  Target, 
+  Shield, 
+  Zap, 
+  DollarSign, 
+  BarChart3, 
+  BookOpen, 
+  Play, 
+  ArrowRight, 
+  Star,
+  Crown,
+  Gift,
+  Calculator,
+  Graph,
+  Lightbulb,
+  Rocket,
+  CheckCircle,
+  Users,
+  Award,
+  TrendingDown
+} from 'lucide-react';
 
 const Learn = () => {
-  const [selectedStrategy, setSelectedStrategy] = useState(null);
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
 
-  const strategies = [
-    {
-      id: 'put-credit-spread',
-      name: 'Put Credit Spread',
-      description: 'A defined-risk strategy that sells a put option while buying a lower-strike put for protection.',
-      difficulty: 'Intermediate',
-      risk: 'Limited',
-      profit: 'Premium received',
-      icon: <TrendingUp className="h-6 w-6" />,
-      content: {
-        overview: 'A put credit spread is a bullish strategy that involves selling a put option at a higher strike price while simultaneously buying a put option at a lower strike price.',
-        steps: [
-          'Identify a stock you believe will stay above a certain price',
-          'Sell a put option at the strike price you expect the stock to stay above',
-          'Buy a put option at a lower strike price for protection',
-          'Collect the net premium (difference between the two put prices)',
-          'Profit if the stock stays above your short put strike at expiration'
-        ],
-        example: {
-          stock: 'AAPL',
-          shortPut: 'Sell AAPL $150 Put for $3.00',
-          longPut: 'Buy AAPL $145 Put for $1.50',
-          netCredit: '$1.50 per share',
-          maxRisk: '$3.50 per share',
-          maxProfit: '$1.50 per share'
-        }
+  const handleStockScreenerAccess = () => {
+    if (!currentUser) {
+      // Redirect to register with free trial
+      navigate('/register?plan=free');
+    } else if (currentUser.plan === 'free') {
+      // Check if free trial expired
+      const trialEnd = new Date(currentUser.createdAt);
+      trialEnd.setDate(trialEnd.getDate() + 7);
+      const now = new Date();
+      
+      if (now > trialEnd) {
+        // Trial expired, redirect to pricing
+        navigate('/pricing');
+      } else {
+        // Still in trial, allow access
+        navigate('/screener');
       }
-    },
-    {
-      id: 'call-credit-spread',
-      name: 'Call Credit Spread',
-      description: 'A bearish strategy that sells a call option while buying a higher-strike call for protection.',
-      difficulty: 'Intermediate',
-      risk: 'Limited',
-      profit: 'Premium received',
-      icon: <TrendingUp className="h-6 w-6" />,
-      content: {
-        overview: 'A call credit spread is a bearish strategy that involves selling a call option at a lower strike price while simultaneously buying a call option at a higher strike price.',
-        steps: [
-          'Identify a stock you believe will stay below a certain price',
-          'Sell a call option at the strike price you expect the stock to stay below',
-          'Buy a call option at a higher strike price for protection',
-          'Collect the net premium (difference between the two call prices)',
-          'Profit if the stock stays below your short call strike at expiration'
-        ],
-        example: {
-          stock: 'TSLA',
-          shortCall: 'Sell TSLA $200 Call for $4.00',
-          longCall: 'Buy TSLA $205 Call for $2.00',
-          netCredit: '$2.00 per share',
-          maxRisk: '$3.00 per share',
-          maxProfit: '$2.00 per share'
-        }
-      }
-    },
-    {
-      id: 'wheel-strategy',
-      name: 'The Wheel Strategy',
-      description: 'A systematic approach combining cash-secured puts and covered calls for consistent income.',
-      difficulty: 'Advanced',
-      risk: 'Moderate',
-      profit: 'Premium income + stock appreciation',
-      icon: <Target className="h-6 w-6" />,
-      content: {
-        overview: 'The Wheel Strategy is a systematic approach that combines selling cash-secured puts and covered calls to generate consistent income while potentially acquiring shares of quality companies.',
-        steps: [
-          'Sell cash-secured puts on stocks you want to own',
-          'If assigned, you buy the stock at the strike price',
-          'Once you own the stock, sell covered calls against it',
-          'If the covered call is assigned, you sell the stock and start over',
-          'If not assigned, keep the premium and sell another covered call'
-        ],
-        example: {
-          stock: 'SPY',
-          putStrike: 'Sell SPY $400 Put for $2.00',
-          assignment: 'Buy 100 shares at $400 if assigned',
-          callStrike: 'Sell SPY $410 Call for $1.50',
-          income: '$350 total premium ($200 + $150)'
-        }
-      }
-    },
-    {
-      id: 'naked-puts',
-      name: 'Naked Puts',
-      description: 'Selling put options without buying protection, requiring significant capital and risk management.',
-      difficulty: 'Advanced',
-      risk: 'High',
-      profit: 'Full premium received',
-      icon: <Shield className="h-6 w-6" />,
-      content: {
-        overview: 'Naked puts involve selling put options without buying protective puts. This strategy requires significant capital and careful risk management.',
-        steps: [
-          'Identify a stock you want to own at a lower price',
-          'Sell put options at your desired purchase price',
-          'Collect the full premium upfront',
-          'If the stock stays above your strike, keep the premium',
-          'If assigned, you buy the stock at the strike price minus the premium received'
-        ],
-        example: {
-          stock: 'NVDA',
-          putStrike: 'Sell NVDA $400 Put for $8.00',
-          effectivePrice: '$392 per share if assigned ($400 - $8)',
-          maxRisk: 'Unlimited below $400',
-          maxProfit: '$800 per contract'
-        }
-      }
+    } else {
+      // Paid user, allow access
+      navigate('/screener');
     }
-  ];
-
-  const handleStrategySelect = (strategy) => {
-    setSelectedStrategy(strategy);
   };
+
+  const getTrialStatus = () => {
+    if (!currentUser) return null;
+    
+    const trialEnd = new Date(currentUser.createdAt);
+    trialEnd.setDate(trialEnd.getDate() + 7);
+    const now = new Date();
+    const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+    
+    return {
+      expired: now > trialEnd,
+      daysLeft: Math.max(0, daysLeft)
+    };
+  };
+
+  const trialStatus = getTrialStatus();
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Learn Options Strategies
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <Rocket className="w-4 h-4" />
+            <span>Transform Your Trading Journey</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            Master <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Options Trading</span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Master the most effective options selling strategies. Each strategy includes step-by-step instructions, 
-            real examples, and risk management guidelines.
+          
+          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+            Discover how professional options traders build wealth through strategic, 
+            risk-managed approaches. Learn from real strategies that work in any market condition.
           </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={handleStockScreenerAccess}
+              className="btn-primary text-lg px-8 py-4 flex items-center gap-2 group"
+            >
+              <Graph className="w-5 h-5" />
+              Access Stock Screener
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+            
+            {!currentUser && (
+              <Link
+                to="/register?plan=free"
+                className="btn-secondary text-lg px-8 py-4 flex items-center gap-2"
+              >
+                <Gift className="w-5 h-5" />
+                Start Free 7-Day Trial
+              </Link>
+            )}
+          </div>
         </div>
 
-        {/* Strategy Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {strategies.map((strategy) => (
-            <div
-              key={strategy.id}
-              onClick={() => handleStrategySelect(strategy)}
-              className={`card cursor-pointer transition-all duration-200 hover:border-primary-500 ${
-                selectedStrategy?.id === strategy.id ? 'border-primary-500 bg-dark-700' : ''
+        {/* Trial Status Banner */}
+        {currentUser && trialStatus && (
+          <div className="mb-12">
+            {trialStatus.expired ? (
+              <div className="bg-red-900/20 border border-red-500/50 text-red-400 p-6 rounded-lg text-center">
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <Shield className="w-6 h-6" />
+                  <h3 className="text-lg font-semibold">Free Trial Expired</h3>
+                </div>
+                <p className="text-red-300 mb-4">
+                  Your 7-day free trial has ended. Upgrade to continue accessing our advanced tools.
+                </p>
+                <Link
+                  to="/pricing"
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  <Crown className="w-4 h-4" />
+                  View Plans
+                </Link>
+              </div>
+            ) : (
+              <div className="bg-green-900/20 border border-green-500/50 text-green-400 p-6 rounded-lg text-center">
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <Gift className="w-6 h-6" />
+                  <h3 className="text-lg font-semibold">Free Trial Active</h3>
+                </div>
+                <p className="text-green-300 mb-4">
+                  You have <span className="font-bold">{trialStatus.daysLeft} days</span> left in your free trial. 
+                  Access all features including the Stock Screener!
+                </p>
+                <button
+                  onClick={handleStockScreenerAccess}
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  <Graph className="w-4 h-4" />
+                  Use Stock Screener
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap justify-center gap-2 mb-12">
+          {[
+            { id: 'overview', label: 'Platform Overview', icon: Rocket },
+            { id: 'strategies', label: 'Basic Strategies', icon: Target },
+            { id: 'benefits', label: 'Why Choose Us', icon: Star },
+            { id: 'getting-started', label: 'Getting Started', icon: Play }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                activeTab === tab.id
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-dark-800 text-gray-300 hover:bg-dark-700 hover:text-white'
               }`}
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-primary-500/10 rounded-lg text-primary-500">
-                  {strategy.icon}
-                </div>
-                <div className="text-right">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    strategy.difficulty === 'Beginner' ? 'bg-green-500/20 text-green-400' :
-                    strategy.difficulty === 'Intermediate' ? 'bg-yellow-500/20 text-yellow-400' :
-                    'bg-red-500/20 text-red-400'
-                  }`}>
-                    {strategy.difficulty}
-                  </span>
-                </div>
-              </div>
-              
-              <h3 className="text-lg font-semibold text-white mb-2">
-                {strategy.name}
-              </h3>
-              
-              <p className="text-gray-300 text-sm mb-4">
-                {strategy.description}
-              </p>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Risk:</span>
-                  <span className="text-white">{strategy.risk}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Profit:</span>
-                  <span className="text-white">{strategy.profit}</span>
-                </div>
-              </div>
-            </div>
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </button>
           ))}
         </div>
 
-        {/* Strategy Details */}
-        {selectedStrategy && (
-          <div className="card">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">
-                {selectedStrategy.name}
-              </h2>
-              <button
-                onClick={() => setSelectedStrategy(null)}
-                className="text-gray-400 hover:text-white"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Overview */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Overview</h3>
-                <p className="text-gray-300 mb-6">
-                  {selectedStrategy.content.overview}
+        {/* Content Sections */}
+        <div className="space-y-16">
+          {/* Platform Overview */}
+          {activeTab === 'overview' && (
+            <div className="space-y-12">
+              <div className="text-center">
+                <h2 className="text-4xl font-bold text-white mb-6">
+                  Your Complete Options Trading Platform
+                </h2>
+                <p className="text-xl text-gray-300 max-w-4xl mx-auto">
+                  ThetaFlowz combines cutting-edge technology with proven trading strategies 
+                  to give you the edge you need in today's volatile markets.
                 </p>
-
-                <h3 className="text-lg font-semibold text-white mb-4">Steps</h3>
-                <ol className="space-y-3">
-                  {selectedStrategy.content.steps.map((step, index) => (
-                    <li key={index} className="flex items-start space-x-3">
-                      <span className="flex-shrink-0 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
-                        {index + 1}
-                      </span>
-                      <span className="text-gray-300">{step}</span>
-                    </li>
-                  ))}
-                </ol>
               </div>
 
-              {/* Example */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Example Trade</h3>
-                <div className="bg-dark-700 rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Stock:</span>
-                    <span className="text-white font-medium">{selectedStrategy.content.example.stock}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[
+                  {
+                    icon: BarChart3,
+                    title: 'Advanced Analytics',
+                    description: 'Real-time market data, Greeks analysis, and portfolio optimization tools that professionals use.'
+                  },
+                  {
+                    icon: Target,
+                    title: 'Strategy Builder',
+                    description: 'Design, backtest, and execute complex options strategies with our intuitive interface.'
+                  },
+                  {
+                    icon: Shield,
+                    title: 'Risk Management',
+                    description: 'Built-in position sizing, stop-loss automation, and portfolio stress testing.'
+                  },
+                  {
+                    icon: Calculator,
+                    title: 'P&L Tracking',
+                    description: 'Monitor your performance with detailed trade logs and performance analytics.'
+                  },
+                  {
+                    icon: Graph,
+                    title: 'Stock Screener',
+                    description: 'Find the perfect opportunities with our advanced screening algorithms.'
+                  },
+                  {
+                    icon: Users,
+                    title: 'Community',
+                    description: 'Learn from experienced traders and share insights with our growing community.'
+                  }
+                ].map((feature, index) => (
+                  <div key={index} className="bg-dark-800 p-6 rounded-lg border border-dark-600 hover:border-blue-500/50 transition-all group">
+                    <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600/30 transition-colors">
+                      <feature.icon className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
+                    <p className="text-gray-300">{feature.description}</p>
                   </div>
-                  
-                  {selectedStrategy.content.example.shortPut && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Short Put:</span>
-                      <span className="text-white">{selectedStrategy.content.example.shortPut}</span>
-                    </div>
-                  )}
-                  
-                  {selectedStrategy.content.example.longPut && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Long Put:</span>
-                      <span className="text-white">{selectedStrategy.content.example.longPut}</span>
-                    </div>
-                  )}
-                  
-                  {selectedStrategy.content.example.shortCall && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Short Call:</span>
-                      <span className="text-white">{selectedStrategy.content.example.shortCall}</span>
-                    </div>
-                  )}
-                  
-                  {selectedStrategy.content.example.longCall && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Long Call:</span>
-                      <span className="text-white">{selectedStrategy.content.example.longCall}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Net Credit:</span>
-                    <span className="text-primary-500 font-medium">{selectedStrategy.content.example.netCredit}</span>
-                  </div>
-                  
-                  {selectedStrategy.content.example.maxRisk && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Max Risk:</span>
-                      <span className="text-red-400 font-medium">{selectedStrategy.content.example.maxRisk}</span>
-                    </div>
-                  )}
-                  
-                  {selectedStrategy.content.example.maxProfit && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Max Profit:</span>
-                      <span className="text-green-400 font-medium">{selectedStrategy.content.example.maxProfit}</span>
-                    </div>
-                  )}
-                </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-                <div className="mt-6 p-4 bg-primary-500/10 border border-primary-500/20 rounded-lg">
-                  <h4 className="text-sm font-semibold text-primary-500 mb-2">Key Takeaways</h4>
-                  <ul className="space-y-1 text-sm text-gray-300">
-                    <li className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-primary-500" />
-                      <span>Always understand your maximum risk before entering a trade</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-primary-500" />
-                      <span>Use proper position sizing (1-5% of portfolio per trade)</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-primary-500" />
-                      <span>Have an exit plan before entering any position</span>
-                    </li>
-                  </ul>
+          {/* Basic Strategies */}
+          {activeTab === 'strategies' && (
+            <div className="space-y-12">
+              <div className="text-center">
+                <h2 className="text-4xl font-bold text-white mb-6">
+                  Master These Essential Options Strategies
+                </h2>
+                <p className="text-xl text-gray-300 max-w-4xl mx-auto">
+                  Start with these foundational strategies that can generate income in any market condition.
+                </p>
+              </div>
+
+              <div className="space-y-8">
+                {[
+                  {
+                    name: 'Covered Call',
+                    difficulty: 'Beginner',
+                    description: 'Sell call options against stock you own to generate monthly income.',
+                    benefits: ['Monthly income', 'Reduced risk', 'Easy to understand'],
+                    example: 'Own 100 AAPL shares, sell 1 call option for $3 premium = $300 income'
+                  },
+                  {
+                    name: 'Cash Secured Put',
+                    difficulty: 'Beginner',
+                    description: 'Sell put options with cash backing to potentially buy stocks at lower prices.',
+                    benefits: ['Income generation', 'Stock acquisition', 'Defined risk'],
+                    example: 'Sell 1 AAPL $150 put for $2 premium = $200 income, obligation to buy at $150'
+                  },
+                  {
+                    name: 'Iron Condor',
+                    difficulty: 'Intermediate',
+                    description: 'Sell both calls and puts to profit from low volatility sideways markets.',
+                    benefits: ['High probability', 'Multiple income streams', 'Defined risk'],
+                    example: 'Sell AAPL $160 call and $140 put, collect $4 total premium'
+                  },
+                  {
+                    name: 'Butterfly Spread',
+                    difficulty: 'Intermediate',
+                    description: 'Limited risk, limited reward strategy for directional bets with high probability.',
+                    benefits: ['High probability', 'Defined risk', 'Directional exposure'],
+                    example: 'Buy 1 $150 call, sell 2 $155 calls, buy 1 $160 call'
+                  }
+                ].map((strategy, index) => (
+                  <div key={index} className="bg-dark-800 p-8 rounded-lg border border-dark-600">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-2xl font-bold text-white mb-2">{strategy.name}</h3>
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                          strategy.difficulty === 'Beginner' ? 'bg-green-500/20 text-green-400' :
+                          strategy.difficulty === 'Intermediate' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-red-500/20 text-red-400'
+                        }`}>
+                          {strategy.difficulty}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-blue-400">
+                          {index + 1}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-gray-300 text-lg mb-6">{strategy.description}</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                          <CheckCircle className="w-5 h-5 text-green-400" />
+                          Key Benefits
+                        </h4>
+                        <ul className="space-y-2">
+                          {strategy.benefits.map((benefit, idx) => (
+                            <li key={idx} className="text-gray-300 flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                              {benefit}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                          <Lightbulb className="w-5 h-5 text-yellow-400" />
+                          Example
+                        </h4>
+                        <p className="text-gray-300 bg-dark-700 p-4 rounded-lg">
+                          {strategy.example}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Why Choose Us */}
+          {activeTab === 'benefits' && (
+            <div className="space-y-12">
+              <div className="text-center">
+                <h2 className="text-4xl font-bold text-white mb-6">
+                  Why Professional Traders Choose ThetaFlowz
+                </h2>
+                <p className="text-xl text-gray-300 max-w-4xl mx-auto">
+                  Join thousands of traders who have transformed their financial future with our platform.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {[
+                  {
+                    icon: TrendingUp,
+                    title: 'Proven Results',
+                    description: 'Our users consistently outperform market averages with our systematic approach.',
+                    stat: '73%',
+                    statLabel: 'Win Rate'
+                  },
+                  {
+                    icon: Shield,
+                    title: 'Risk Management',
+                    description: 'Built-in safeguards protect your capital while maximizing profit potential.',
+                    stat: '85%',
+                    statLabel: 'Risk Reduction'
+                  },
+                  {
+                    icon: Zap,
+                    title: 'Time Efficiency',
+                    description: 'Automated tools save you hours of research and analysis every week.',
+                    stat: '10hrs',
+                    statLabel: 'Saved Weekly'
+                  },
+                  {
+                    icon: DollarSign,
+                    title: 'Income Generation',
+                    description: 'Generate consistent monthly income regardless of market direction.',
+                    stat: '$2,400',
+                    statLabel: 'Avg Monthly'
+                  }
+                ].map((benefit, index) => (
+                  <div key={index} className="bg-dark-800 p-8 rounded-lg border border-dark-600 text-center">
+                    <div className="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <benefit.icon className="w-8 h-8 text-blue-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">{benefit.title}</h3>
+                    <p className="text-gray-300 mb-6">{benefit.description}</p>
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-blue-400 mb-1">{benefit.stat}</div>
+                      <div className="text-gray-400">{benefit.statLabel}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 p-8 rounded-lg text-center">
+                <h3 className="text-2xl font-bold text-white mb-4">
+                  Ready to Start Your Trading Journey?
+                </h3>
+                <p className="text-gray-300 mb-6">
+                  Join thousands of successful traders who have already transformed their financial future.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={handleStockScreenerAccess}
+                    className="btn-primary text-lg px-8 py-4 flex items-center gap-2 justify-center"
+                  >
+                    <Graph className="w-5 h-5" />
+                    Try Stock Screener
+                  </button>
+                  {!currentUser && (
+                    <Link
+                      to="/register?plan=free"
+                      className="btn-secondary text-lg px-8 py-4 flex items-center gap-2 justify-center"
+                    >
+                      <Gift className="w-5 h-5" />
+                      Start Free Trial
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Getting Started */}
+          {activeTab === 'getting-started' && (
+            <div className="space-y-12">
+              <div className="text-center">
+                <h2 className="text-4xl font-bold text-white mb-6">
+                  Your Path to Options Trading Success
+                </h2>
+                <p className="text-xl text-gray-300 max-w-4xl mx-auto">
+                  Follow this proven roadmap to build your trading skills and confidence step by step.
+                </p>
+              </div>
+
+              <div className="space-y-8">
+                {[
+                  {
+                    step: '01',
+                    title: 'Start Your Free Trial',
+                    description: 'Sign up for our 7-day free trial to explore all platform features.',
+                    action: 'No credit card required',
+                    icon: Gift
+                  },
+                  {
+                    step: '02',
+                    title: 'Explore the Stock Screener',
+                    description: 'Use our advanced screening tools to find high-probability trading opportunities.',
+                    action: 'Available during free trial',
+                    icon: Graph
+                  },
+                  {
+                    step: '03',
+                    title: 'Learn Basic Strategies',
+                    description: 'Master covered calls and cash-secured puts through our educational content.',
+                    action: 'Free learning resources',
+                    icon: BookOpen
+                  },
+                  {
+                    step: '04',
+                    title: 'Practice with Paper Trading',
+                    description: 'Test strategies risk-free before using real money.',
+                    action: 'Simulated trading environment',
+                    icon: Target
+                  },
+                  {
+                    step: '05',
+                    title: 'Execute Your First Trade',
+                    description: 'Start with small positions and build confidence over time.',
+                    action: 'Real-time execution',
+                    icon: TrendingUp
+                  },
+                  {
+                    step: '06',
+                    title: 'Scale and Optimize',
+                    description: 'Increase position sizes and refine strategies based on results.',
+                    action: 'Advanced analytics',
+                    icon: BarChart3
+                  }
+                ].map((step, index) => (
+                  <div key={index} className="flex items-start gap-6">
+                    <div className="flex-shrink-0">
+                      <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                        {step.step}
+                      </div>
+                    </div>
+                    <div className="flex-1 bg-dark-800 p-6 rounded-lg border border-dark-600">
+                      <div className="flex items-center gap-3 mb-3">
+                        <step.icon className="w-6 h-6 text-blue-400" />
+                        <h3 className="text-xl font-bold text-white">{step.title}</h3>
+                      </div>
+                      <p className="text-gray-300 mb-3">{step.description}</p>
+                      <div className="text-blue-400 font-medium">{step.action}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-white mb-6">
+                  Ready to Begin?
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={handleStockScreenerAccess}
+                    className="btn-primary text-lg px-8 py-4 flex items-center gap-2 justify-center"
+                  >
+                    <Graph className="w-5 h-5" />
+                    Access Stock Screener
+                  </button>
+                  {!currentUser && (
+                    <Link
+                      to="/register?plan=free"
+                      className="btn-secondary text-lg px-8 py-4 flex items-center gap-2 justify-center"
+                    >
+                      <Gift className="w-5 h-5" />
+                      Start Free Trial
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
