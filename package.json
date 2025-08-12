@@ -20,11 +20,14 @@
     "recharts": "^2.8.0",
     "web-vitals": "^2.1.4"
   },
+  "homepage": "https://yourusername.github.io/thetaflowz",
   "scripts": {
     "start": "craco start",
     "build": "react-scripts build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -46,6 +49,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.16",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6"
   }
