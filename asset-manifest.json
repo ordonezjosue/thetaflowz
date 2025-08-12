@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/thetaflowz/static/css/main.72a2412e.css",
+    "main.js": "/thetaflowz/static/js/main.9dbc104b.js",
+    "static/js/677.993e00e5.chunk.js": "/thetaflowz/static/js/677.993e00e5.chunk.js",
+    "index.html": "/thetaflowz/index.html",
+    "main.72a2412e.css.map": "/thetaflowz/static/css/main.72a2412e.css.map",
+    "main.9dbc104b.js.map": "/thetaflowz/static/js/main.9dbc104b.js.map",
+    "677.993e00e5.chunk.js.map": "/thetaflowz/static/js/677.993e00e5.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.72a2412e.css",
+    "static/js/main.9dbc104b.js"
+  ]
+}
