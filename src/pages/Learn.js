@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 
 const Learn = () => {
+  console.log('📚 Learn component rendering...');
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
