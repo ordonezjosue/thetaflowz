@@ -19,21 +19,13 @@ import {
   Rocket,
   CheckCircle,
   Users,
-  Award,
-  TrendingDown,
   Video,
   Clock,
   Bookmark,
-  ChevronDown,
-  ChevronUp,
-  AlertTriangle,
-  Info,
-  ThumbsUp,
   MessageCircle,
   BarChart,
   PieChart,
   Activity,
-  Calendar,
   Minus
 } from 'lucide-react';
 
@@ -148,14 +140,14 @@ const Learn = () => {
         }));
       }
     }
-  }, [activeTab, currentUser]);
+  }, [activeTab, currentUser, userProgress]);
 
   // Mark overview as completed when user first visits
   useEffect(() => {
     if (currentUser && !userProgress.overview) {
       updateProgress('overview', true);
     }
-  }, [currentUser]);
+  }, [currentUser, userProgress.overview]);
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -536,7 +528,7 @@ const Learn = () => {
                       
                       <div>
                         <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                          <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                          <Shield className="w-5 h-5 text-yellow-400" />
                           Risks
                         </h4>
                         <ul className="space-y-2">
@@ -734,7 +726,7 @@ const Learn = () => {
               <div className="flex flex-wrap justify-center gap-4 mb-12">
                 {[
                   { id: 'bull', label: 'Bull Market', icon: TrendingUp, color: 'green' },
-                  { id: 'bear', label: 'Bear Market', icon: TrendingDown, color: 'red' },
+                  { id: 'bear', label: 'Bear Market', icon: TrendingUp, color: 'red' },
                   { id: 'sideways', label: 'Sideways Market', icon: Minus, color: 'yellow' },
                   { id: 'volatile', label: 'Volatile Market', icon: Activity, color: 'purple' }
                 ].map((condition) => (
