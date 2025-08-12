@@ -20,14 +20,12 @@
     "recharts": "^2.8.0",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://yourusername.github.io/thetaflowz",
+
   "scripts": {
     "start": "craco start",
     "build": "react-scripts build",
     "test": "craco test",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
