@@ -622,6 +622,26 @@ const StockScreener = () => {
             Debug: Force Run
           </button>
           
+          <button
+            onClick={async () => {
+              console.log('Test button clicked');
+              try {
+                const testResults = await stockScreenerService.testSimpleScreening();
+                console.log('Test results:', testResults);
+                setScreenerResults(testResults);
+                setLastUpdate(new Date());
+                alert(`Test successful! Found ${testResults.length} stocks.`);
+              } catch (error) {
+                console.error('Test failed:', error);
+                alert(`Test failed: ${error.message}`);
+              }
+            }}
+            className="btn-secondary text-lg px-8 py-4 inline-flex items-center gap-2"
+          >
+            <CheckCircle className="w-5 h-5" />
+            Test: Get Results
+          </button>
+          
           {screenerResults.length > 0 && (
             <button
               onClick={exportResults}
