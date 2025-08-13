@@ -46,19 +46,42 @@ class TwelveDataService {
   // Get multiple stock quotes
   async getMultipleQuotes(symbols) {
     try {
+      console.log('TwelveData API: Attempting to fetch quotes for symbols:', symbols);
+      console.log('TwelveData API: Base URL:', this.baseUrl);
+      console.log('TwelveData API: API Key exists:', !!this.apiKey);
+      
+      if (!this.apiKey) {
+        throw new Error('API key is missing. Please set REACT_APP_TWELVEDATA_API_KEY environment variable.');
+      }
+      
+      if (!this.baseUrl) {
+        throw new Error('Base URL is missing. Please set REACT_APP_TWELVEDATA_BASE_URL environment variable.');
+      }
+      
       const symbolList = symbols.join(',');
-      const response = await fetch(
-        `${this.baseUrl}/quote?symbol=${symbolList}&apikey=${this.apiKey}`
-      );
+      const url = `${this.baseUrl}/quote?symbol=${symbolList}&apikey=${this.apiKey}`;
+      console.log('TwelveData API: Requesting URL:', url);
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+        const errorText = await response.text();
+        console.error('TwelveData API: Response not OK:', response.status, errorText);
+        throw new Error(`API request failed: ${response.status} - ${errorText}`);
       }
       
       const data = await response.json();
+      console.log('TwelveData API: Raw response data:', data);
+      
+      // Check if API returned an error
+      if (data.status === 'error') {
+        console.error('TwelveData API: API returned error:', data);
+        throw new Error(data.message || 'API error occurred');
+      }
       
       // Handle both single and multiple results
       const quotes = Array.isArray(data) ? data : [data];
+      console.log('TwelveData API: Processed quotes:', quotes.length);
       
       return quotes.map(quote => ({
         symbol: quote.symbol,
@@ -73,7 +96,7 @@ class TwelveDataService {
         timestamp: new Date(quote.timestamp)
       }));
     } catch (error) {
-      console.error('Error fetching multiple quotes:', error);
+      console.error('TwelveData API: Error fetching multiple quotes:', error);
       throw error;
     }
   }

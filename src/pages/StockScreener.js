@@ -175,13 +175,53 @@ const StockScreener = () => {
     };
   }, [autoRefresh, refreshInterval, screenerResults.length]);
 
+  // Auto-run screener when component mounts or strategy changes
+  useEffect(() => {
+    console.log('StockScreener: Component mounted or strategy changed, running initial screener...');
+    
+    // Test the service first
+    const testService = async () => {
+      try {
+        console.log('StockScreener: Testing stockScreenerService...');
+        const testResult = await stockScreenerService.testService();
+        console.log('StockScreener: Service test result:', testResult);
+      } catch (error) {
+        console.error('StockScreener: Service test failed:', error);
+      }
+    };
+    
+    testService();
+    
+    // Use a timeout to ensure the component is fully rendered
+    const timer = setTimeout(() => {
+      runScreener();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []); // Only run once when component mounts
+
+  // Run screener when strategy changes
+  useEffect(() => {
+    if (selectedStrategy) {
+      console.log('StockScreener: Strategy changed to:', selectedStrategy);
+      // Use a timeout to ensure filters are updated
+      const timer = setTimeout(() => {
+        runScreener();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [selectedStrategy]);
+
   // Run stock screening using real API data
   const runScreener = async () => {
     setIsLoading(true);
     
     try {
+      console.log('StockScreener: Starting screener with filters:', filters);
       // Use the real stock screener service
       const results = await stockScreenerService.screenStocks(filters);
+      console.log('StockScreener: Got results from service:', results.length);
       
       // Sort results
       const sortedResults = results.sort((a, b) => {
@@ -193,13 +233,25 @@ const StockScreener = () => {
       });
 
       setScreenerResults(sortedResults);
+      setLastUpdate(new Date());
+      console.log('StockScreener: Screener completed successfully with', sortedResults.length, 'results');
     } catch (error) {
-      console.error('Error running screener:', error);
+      console.error('StockScreener: Error running screener:', error);
+      
+      // Show user-friendly error message
+      alert(`Screener Error: ${error.message}\n\nFalling back to sample data. Please check your API configuration.`);
+      
       // Fallback to mock data if API fails
       const mockResults = sp500Stocks.map(stock => ({
         ...stock,
         price: Math.random() * (filters.maxPrice - filters.minPrice) + filters.minPrice,
+        change: (Math.random() - 0.5) * 10,
+        changePercent: (Math.random() - 0.5) * 20,
         volume: Math.random() * 10000000 + filters.minVolume,
+        high: Math.random() * (filters.maxPrice - filters.minPrice) + filters.minPrice + 5,
+        low: Math.random() * (filters.maxPrice - filters.minPrice) + filters.minPrice - 5,
+        open: Math.random() * (filters.maxPrice - filters.minPrice) + filters.minPrice,
+        previousClose: Math.random() * (filters.maxPrice - filters.minPrice) + filters.minPrice,
         marketCap: Math.random() * 10000000000 + filters.minMarketCap,
         bidAskSpread: Math.random() * filters.maxBidAskSpread,
         impliedVolatility: Math.random() * (filters.maxImpliedVolatility - filters.minImpliedVolatility) + filters.minImpliedVolatility,
@@ -227,6 +279,7 @@ const StockScreener = () => {
 
       setScreenerResults(sortedResults);
       setLastUpdate(new Date());
+      console.log('StockScreener: Fallback mock data generated:', sortedResults.length, 'results');
     } finally {
       setIsLoading(false);
     }
@@ -556,6 +609,19 @@ const StockScreener = () => {
             {isLoading ? 'Running Screener...' : 'Run Stock Screener'}
           </button>
           
+          <button
+            onClick={() => {
+              console.log('Manual trigger clicked');
+              console.log('Current filters:', filters);
+              console.log('Current strategy:', selectedStrategy);
+              runScreener();
+            }}
+            className="btn-secondary text-lg px-8 py-4 inline-flex items-center gap-2"
+          >
+            <RefreshCw className="w-5 h-5" />
+            Debug: Force Run
+          </button>
+          
           {screenerResults.length > 0 && (
             <button
               onClick={exportResults}
@@ -602,6 +668,18 @@ const StockScreener = () => {
                 )}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Debug Information */}
+        <div className="bg-dark-800 p-4 rounded-lg border border-dark-600 mb-6">
+          <h4 className="text-sm font-medium text-gray-400 mb-2">Debug Info:</h4>
+          <div className="text-xs text-gray-500 space-y-1">
+            <div>Strategy: {selectedStrategy}</div>
+            <div>Filters: {JSON.stringify(filters)}</div>
+            <div>Results Count: {screenerResults.length}</div>
+            <div>Loading: {isLoading.toString()}</div>
+            <div>Last Update: {lastUpdate ? lastUpdate.toLocaleTimeString() : 'Never'}</div>
           </div>
         </div>
 
